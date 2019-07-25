@@ -7,7 +7,7 @@ import HomePageContainer from "./pages/homepage/homepage.container";
 import ShopPage from "./pages/shop/shop.component";
 import Header from "./components/header/header.component";
 import SignInAndUpPageContainer from "./pages/sign-in-and-up/sign-in-and-up.container";
-import CheckoutPage from "./pages/checkout/checkout.component";
+import CheckoutPageContainer from "./pages/checkout/checkout.container";
 // we dont need firebase utils anymore in App.js since we are doing all the auth related code in sagas
 // import {
 //   auth,
@@ -94,7 +94,7 @@ const App = ({ checkUserSessionStart, currentUser }) => {
         />
         {/* what we have done here is to conditionally render one of two components depending if currentUser exists or not */}
         {/* <Redirect> router component allow us to change the path of a route to a new one so we can avoid to show sign in page when a user is logged in */}
-        <Route exact path="/checkout" component={CheckoutPage} />
+        <Route exact path="/checkout" component={CheckoutPageContainer} />
       </Switch>
     </div>
   );
