@@ -1,4 +1,5 @@
 import { createSelector } from "reselect";
+import { selectIsCheckingUser } from "../user/user.selectors";
 
 // input selector
 const selectShop = state => state.shop;
@@ -33,4 +34,14 @@ export const selectIsCollectionsFetching = createSelector(
 export const selectorIsCollectionsLoaded = createSelector(
   [selectShop],
   shop => !!shop.collections // this checks if collections property is either null (it returns false) or there are objects (it returns true)
+);
+
+export const selectIsCollectionFetchingAndUserChecking = createSelector(
+  [selectIsCollectionsFetching, selectIsCheckingUser],
+  (isFetching, isChecking) => isFetching || isChecking
+);
+
+export const selectIsCollectionNotLoadedAndUserChecking = createSelector(
+  [selectorIsCollectionsLoaded, selectIsCheckingUser],
+  (collections, isChecking) => !collections || isChecking
 );

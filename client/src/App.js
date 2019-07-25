@@ -3,7 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { createStructuredSelector } from "reselect";
 
-import HomePageContainer from "./pages/homepage/homepage.component";
+import HomePageContainer from "./pages/homepage/homepage.container";
 import ShopPage from "./pages/shop/shop.component";
 import Header from "./components/header/header.component";
 import SignInAndUpPageContainer from "./pages/sign-in-and-up/sign-in-and-up.container";
@@ -14,14 +14,14 @@ import CheckoutPage from "./pages/checkout/checkout.component";
 //   createUserProfileDocument
 //   // addCollectionAndDocuments only needed to update the collections in the firestore
 // } from "./firebase/firebase.utils"; // we need this to make our app aware of a google auth process
-import { checkUserSession } from "./redux/user/user.action"; // in order to dispatch the action and be able to use it as a prop we need to import it
+import { checkUserSessionStart } from "./redux/user/user.action"; // in order to dispatch the action and be able to use it as a prop we need to import it
 import { selectCurrentUser } from "./redux/user/user.selectors";
 // import { selectCollectionsForPreview } from "./redux/shop/shop.selectors"; | we only need this selector when we need to udpate collections in firestore | this selector returns an array with the objects of the different collections
 
 // import "./App.css"
 import { GlobalStyle } from "./global.styles";
 
-const App = ({ checkUserSession, currentUser }) => {
+const App = ({ checkUserSessionStart, currentUser }) => {
   // since we don't need state anymore nor to use the props inside the constructor  we don't need them
 
   // <- WE ARE CHANGING OUR AUTH CODE TO ADDAPT IT INTO SAGAS ->
@@ -67,8 +67,8 @@ const App = ({ checkUserSession, currentUser }) => {
 
   // we replace componentDidMount with useEffect
   useEffect(() => {
-    checkUserSession();
-  }, [checkUserSession]); // react hooks demands checkUserSessions to be in the array since it is a dependency of the function, since it is a user action function that does not change its ok, we will have to check what to do when it is a property that comes from a parent component because it is different
+    checkUserSessionStart();
+  }, [checkUserSessionStart]); // react hooks demands checkUserSessions to be in the array since it is a dependency of the function, since it is a user action function that does not change its ok, we will have to check what to do when it is a property that comes from a parent component because it is different
   // this will only load when the component is mount since checkUserSession is not going to change
 
   // componentDidMount() {
@@ -106,7 +106,7 @@ const mapStateToProps = createStructuredSelector({
 });
 
 const mapDispatchToProps = dispatch => ({
-  checkUserSession: () => dispatch(checkUserSession()) // dispatch is a way for redux to know that whatever you pass to this function is going to be an action object that is going to be passed to every reducer
+  checkUserSessionStart: () => dispatch(checkUserSessionStart()) // dispatch is a way for redux to know that whatever you pass to this function is going to be an action object that is going to be passed to every reducer
   // we returning an object which its property is a function that dispatchs the action with the requested parameter, in this case the user
   // once we need to use the action inside the component we will do this.props.setCurrentUser(user)
 });

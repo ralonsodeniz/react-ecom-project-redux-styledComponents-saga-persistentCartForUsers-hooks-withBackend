@@ -13,7 +13,8 @@ import {
   signOutSuccess,
   signOutFailure,
   signUpSuccess,
-  signUpFailure
+  signUpFailure,
+  checkUserSessionEnd
 } from "./user.action"; // we need this actions for our sagas to trigger user reducer updates
 import updateCartPersistReducer from "../persist";
 import { persistor } from "../store";
@@ -46,7 +47,7 @@ export function* signInWithGoogle() {
   try {
     // we want to have the userAuth object inside our saga thats why we do not use signInWithGoogle from firebase.utils
     // what auth returns is a signIn object that inside of it it has the property user which is the userAuth object we want
-    const { user } = yield auth.signInWithPopup(googleProvider);
+    const { user } = yield auth.signInWithRedirect(googleProvider);
     yield call(getSnapshotFromUserAuth, user);
   } catch (error) {
     yield put(signInFailure(error));
@@ -78,16 +79,23 @@ export function* onEmailSignInStart() {
 export function* isUserAuthenticated() {
   try {
     const userAuth = yield getCurrentUser(); // we dont use call here because this is a Promise | we get the userAuth if there is a user logged in
-    if (!userAuth) return; // if the user is null (no user) we return, we dont want to do anything
-    // if there is a value we proceed to identify the user in our db
+    // if the user is null (no user) we return, we dont want to do anything
+    if (!userAuth) {
+      yield put(checkUserSessionEnd());
+      return; // if there is a value we proceed to identify the user in our db
+    }
     yield call(getSnapshotFromUserAuth, userAuth);
   } catch (error) {
     yield put(signInFailure(error)); // if there is an error on our check user firebase utility we return the error using the signInFailure since it is an error related to this
   }
+  yield put(checkUserSessionEnd());
 }
 
 export function* onCheckUserSession() {
-  yield takeLatest(UserActionTypes.CHECK_USER_SESSION, isUserAuthenticated);
+  yield takeLatest(
+    UserActionTypes.CHECK_USER_SESSION_START,
+    isUserAuthenticated
+  );
 }
 
 // Sagas to sign out
