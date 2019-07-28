@@ -1,14 +1,12 @@
 import React from "react";
 
-import { SpinnerContainer, SpinnerOverlay } from "./with-spinner.styles";
+import Spinner from "../spinner/spinner.component";
 
 const WithSpinner = WrappedComponent => ({ isLoading, ...otherProps }) => {
   // this is a HOC (higher order component) it takes as inputs a component and some props, executes the code and retruns a modified version of the component itslef we passed as parameter
   return isLoading ? (
     // if the component is loading we pass the loading spinner we created using the styled components
-    <SpinnerOverlay>
-      <SpinnerContainer />
-    </SpinnerOverlay>
+    <Spinner />
   ) : (
     // if it is not loading we pass the wrapped component and we pass through the props to the component
     <WrappedComponent {...otherProps} />

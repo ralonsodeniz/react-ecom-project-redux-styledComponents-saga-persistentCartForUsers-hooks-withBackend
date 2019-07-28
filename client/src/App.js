@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { createStructuredSelector } from "reselect";
 
-import HomePageContainer from "./pages/homepage/homepage.container";
-import ShopPage from "./pages/shop/shop.component";
+// import HomePageContainer from "./pages/homepage/homepage.container";
+// import ShopPage from "./pages/shop/shop.component";
 import Header from "./components/header/header.component";
-import SignInAndUpPageContainer from "./pages/sign-in-and-up/sign-in-and-up.container";
-import CheckoutPageContainer from "./pages/checkout/checkout.container";
+import Spinner from "./components/spinner/spinner.component";
+import ErrorBoundary from "./components/error-boundary/error-boundary.component";
+// import SignInAndUpPageContainer from "./pages/sign-in-and-up/sign-in-and-up.container";
+// import CheckoutPageContainer from "./pages/checkout/checkout.container";
 // we dont need firebase utils anymore in App.js since we are doing all the auth related code in sagas
 // import {
 //   auth,
@@ -20,6 +22,17 @@ import { selectCurrentUser } from "./redux/user/user.selectors";
 
 // import "./App.css"
 import { GlobalStyle } from "./global.styles";
+
+const HomePageContainer = lazy(() =>
+  import("./pages/homepage/homepage.container")
+);
+const ShopPage = lazy(() => import("./pages/shop/shop.component"));
+const SignInAndUpPageContainer = lazy(() =>
+  import("./pages/sign-in-and-up/sign-in-and-up.container")
+);
+const CheckoutPageContainer = lazy(() =>
+  import("./pages/checkout/checkout.container")
+);
 
 const App = ({ checkUserSessionStart, currentUser }) => {
   // since we don't need state anymore nor to use the props inside the constructor  we don't need them
@@ -81,20 +94,24 @@ const App = ({ checkUserSessionStart, currentUser }) => {
       <GlobalStyle />
       <Header />
       <Switch>
-        <Route exact path="/" component={HomePageContainer} />
-        <Route path="/shop" component={ShopPage} />
-        {/* we keep /shop without exact because we want it to be rendered when we access to pages derivated from shop as /shop/hats etc to for example fetch our collection data from firestore */}
-        {/* the shop page is rendered and ontop of it renders the components of the categoryId */}
-        <Route
-          exact
-          path="/signin"
-          render={() =>
-            currentUser ? <Redirect to="/" /> : <SignInAndUpPageContainer />
-          }
-        />
-        {/* what we have done here is to conditionally render one of two components depending if currentUser exists or not */}
-        {/* <Redirect> router component allow us to change the path of a route to a new one so we can avoid to show sign in page when a user is logged in */}
-        <Route exact path="/checkout" component={CheckoutPageContainer} />
+        <ErrorBoundary>
+          <Suspense fallback={<Spinner />}>
+            <Route exact path="/" component={HomePageContainer} />
+            <Route path="/shop" component={ShopPage} />
+            {/* we keep /shop without exact because we want it to be rendered when we access to pages derivated from shop as /shop/hats etc to for example fetch our collection data from firestore */}
+            {/* the shop page is rendered and ontop of it renders the components of the categoryId */}
+            <Route
+              exact
+              path="/signin"
+              render={() =>
+                currentUser ? <Redirect to="/" /> : <SignInAndUpPageContainer />
+              }
+            />
+            {/* what we have done here is to conditionally render one of two components depending if currentUser exists or not */}
+            {/* <Redirect> router component allow us to change the path of a route to a new one so we can avoid to show sign in page when a user is logged in */}
+            <Route exact path="/checkout" component={CheckoutPageContainer} />
+          </Suspense>
+        </ErrorBoundary>
       </Switch>
     </div>
   );

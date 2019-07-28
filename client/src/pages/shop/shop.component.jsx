@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import { connect } from "react-redux";
 // since we are not using selectors in the shop component anymore we don't need the createStructuredSelector method here
 // import { createStructuredSelector } from "reselect";
+
+import Spinner from "../../components/spinner/spinner.component";
 
 import { fetchCollectionsStart } from "../../redux/shop/shop.actions";
 // we dont need the selector because they are now inside the collection containers
@@ -11,14 +13,21 @@ import { fetchCollectionsStart } from "../../redux/shop/shop.actions";
 //   selectorIsCollectionsLoaded
 // } from "../../redux/shop/shop.selectors";
 // import WithSpinner from "../../components/with-spinner/with-spiner.component";
-import CollectionsOverviewContainer from "../../components/collections-overview/collections-overview.container";
-import CollectionPageContainer from "../collection/collection.container";
+// import CollectionsOverviewContainer from "../../components/collections-overview/collections-overview.container";
+// import CollectionPageContainer from "../collection/collection.container";
 
 // !- Now we have a container for each CollectionsOverview and CollectionPage that contains the original component modified by WithSipinner HOC to pass it the props it needs without polluting the shop component page
 // we are going to create two components using WithSpinner and the components we want to render when the isLoading is false
 // here we pass to the HOC the first parameter that is the component to wrap, what we get in return is a function that expects the two arguments of the second parameter to return the component to render
 // const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
 // const CollectionPageWithSpinner = WithSpinner(CollectionPage);
+
+const CollectionsOverviewContainer = lazy(() =>
+  import("../../components/collections-overview/collections-overview.container")
+);
+const CollectionPageContainer = lazy(() =>
+  import("../collection/collection.container")
+);
 
 // <- WE ADD useEffect HOOK TO CHANGE THIS COMPONENT FROM CLASS TO FUNCTION ->
 const ShopPage = ({ fetchCollectionsStart, match }) => {
@@ -85,31 +94,33 @@ const ShopPage = ({ fetchCollectionsStart, match }) => {
   return (
     <div className="shop-page">
       {/* instead of using component we will use render={(properties we want to pass to the component) => component to render with the properties} */}
-      <Route
-        exact
-        path={`${match.path}`}
-        //   props // props are the Route props needed by the CollectionsOverview component
-        // ) => (
-        //   <CollectionsOverviewWithSpinner
-        //     isLoading={!isCollectionsLoaded}
-        //     {...props}
-        // we switch bak to component since we do not need to pass props to the component we are rendering through Route
-        // here we pass to the HOC created with WithSpinner the two arguments of
-        // the second parameter of the HOC function
-        component={CollectionsOverviewContainer}
-      />
-      <Route
-        path={`${match.path}/:collectionId`}
-        // render={props => (
-        //   <CollectionPageWithSpinner
-        //     isLoading={!isCollectionsLoaded}
-        //     {...props}
-        //  />
-        //)}
-        component={CollectionPageContainer}
-      />
-      {/* /:collectionId means what goes before the match.path, in this case what is next to /shop/ */}
-      {/* thanks to this in the CollectionPage we will have access to a new object inside match, params, with will have a property called collectionId (what goes after the : is a param) which value would be the route after /shop (match.path) */}
+      <Suspense fallback={<Spinner />}>
+        <Route
+          exact
+          path={`${match.path}`}
+          //   props // props are the Route props needed by the CollectionsOverview component
+          // ) => (
+          //   <CollectionsOverviewWithSpinner
+          //     isLoading={!isCollectionsLoaded}
+          //     {...props}
+          // we switch bak to component since we do not need to pass props to the component we are rendering through Route
+          // here we pass to the HOC created with WithSpinner the two arguments of
+          // the second parameter of the HOC function
+          component={CollectionsOverviewContainer}
+        />
+        <Route
+          path={`${match.path}/:collectionId`}
+          // render={props => (
+          //   <CollectionPageWithSpinner
+          //     isLoading={!isCollectionsLoaded}
+          //     {...props}
+          //  />
+          //)}
+          component={CollectionPageContainer}
+        />
+        {/* /:collectionId means what goes before the match.path, in this case what is next to /shop/ */}
+        {/* thanks to this in the CollectionPage we will have access to a new object inside match, params, with will have a property called collectionId (what goes after the : is a param) which value would be the route after /shop (match.path) */}
+      </Suspense>
     </div>
   );
 };
