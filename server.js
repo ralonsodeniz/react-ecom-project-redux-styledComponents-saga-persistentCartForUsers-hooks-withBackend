@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const compression = require("compression");
+const enforce = require("express-sslify"); // this package is to enforce non https request our server can receive to be https
 
 // this give node access to dotenv enviorment and .env files
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
@@ -15,6 +16,7 @@ const port = process.env.PORT || 5000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(compression());
+app.use(enforce.HTTPS({ trustProtoHeader: true })); // we pass the object option because this is needed by heroku
 app.use(cors());
 
 if (process.env.NODE_ENV === "production") {
@@ -35,6 +37,11 @@ if (process.env.NODE_ENV === "production") {
 app.listen(port, error => {
   if (error) throw error;
   console.log("Server running on port " + port);
+});
+
+// we add the endpoint for the service worker for our app to be a PWA (progressive web app)
+app.get("/service-worker.js", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "..", "build", "service-worker.js"));
 });
 
 // post() indicates that we are receiving something from the frontend
